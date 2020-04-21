@@ -23,13 +23,13 @@ class State:
                 # check if the place is legal
                  
                 if board_user[i, j] != 0:
-                    print('\033[92m{0:>2}\033[0m'.format(board_user[i, j]), end=' ')
+                    print('\x1b[92m{0:>2}\x1b[0m'.format(board_user[i, j]), end=' ')
                 elif board_ai[i, j] != 0:
                     print('{0:>2}'.format(board_ai[i, j]), end=' ')
                 elif board_legal[i, j]:
                     print('{0:>2}'.format(0), end=' ')
                 else:
-                    print('\033[91m{0:>2}\033[0m'.format('X'), end=' ')
+                    print('\x1b[91m{0:>2}\x1b[0m'.format('X'), end=' ')
                     
             print('')
         print("")
