@@ -8,6 +8,7 @@ class State:
         self.board_legal = board_legal
         self.user_cards = user_cards
         self.ai_cards = ai_cards
+        self.change = 0
 
     def __len__(self):
        return len(self.ai_cards) + len(self.user_cards)
@@ -34,14 +35,12 @@ class State:
             print('')
         print("")
 
-    def combine_board(self, board_user, board_ai):
-        return self.board_user+self.board_ai
 
     def display_cards(self):
-        print("[User chess pieces]:", self.user_cards)
-        print("[  AI chess pieces]:", self.ai_cards)      
+        print("[User chess pieces]:", list(self.user_cards))
+        print("[  AI chess pieces]:", list(self.ai_cards))      
 
-    def check(self):
+    def check(self, x, y):
         
         """
         A card on the board will be removed if the total of 
@@ -53,16 +52,17 @@ class State:
 
         # board with padding zeros to compute total 8 neighbors and itself
         paddingboard = np.pad(board_user+board_ai, ((1,1),(1,1)), 'constant')
+        checkboard = np.full((boardsize+2, boardsize+2), False, dtype=bool)
+        checkboard[x:x+3, y:y+3]= True
+        paddingboard *= checkboard
 
         # board to mark for removal
         markedboard = np.full((boardsize, boardsize), False, dtype=bool)
         
         nonzero = np.array(np.where(paddingboard > 0)).T
 
-        for [i,j] in nonzero:
-            total = paddingboard[i-1, j-1] + paddingboard[i-1, j] + paddingboard[i-1, j+1] \
-                    + paddingboard[i, j-1] + paddingboard[i, j] + paddingboard[i, j+1] \
-                    + paddingboard[i+1, j-1] + paddingboard[i+1, j] + paddingboard[i+1, j+1] 
+        for [i,j] in nonzero.tolist():
+            total = np.sum(paddingboard[i-1:i+2, j-1:j+2])
             if total > 15:
                 markedboard[i-1, j-1] = True# self.mark(markedboard, i, j)
             
@@ -80,34 +80,39 @@ class State:
 
         marked = np.array(np.where(markedboard == True)).T
 
-        for [i, j] in marked:
+        for [i, j] in marked.tolist():
             if board_user[i, j] != 0:
                 board_user[i, j] = 0
             elif board_ai[i, j] != 0:
                 board_ai[i, j] = 0
 
-    def place_chess(self, user, row, col, weight):
+    def place_chess(self, isAI, row, col, weight):
+        prev = np.sum(self.board_ai+self.board_user)
         
-        # Check illegal place
-        if self.board_legal[row][col] == False:
-            return False
-        
-        # Check user cards
-        if user:
-            if weight not in self.user_cards:
-                return False
+        if isAI:
+            available = np.array(np.where(self.ai_cards==weight)).T
             
-            self.user_cards.remove(weight)
-            self.board_user[row][col] = weight
+            self.board_ai[row, col] = weight
+            self.ai_cards = np.delete(self.ai_cards, available[0][0])
+        
         else:
-            if weight not in self.ai_cards:
+            # Check illegal place
+            if not (row in range(self.boardsize) and col in range(self.boardsize)):
+                return False
+            if self.board_legal[row, col] == False:
+                return False
+
+            available = np.array(np.where(self.user_cards==weight)).T
+            if available.size == 0:
                 return False
             
-            self.ai_cards.remove(weight)
-            self.board_ai[row][col] = weight
+            self.board_user[row, col] = weight
+            self.user_cards = np.delete(self.user_cards, available[0][0])
 
-        self.board_legal[row][col] = False
-        self.check()
+        self.board_legal[row, col] = False
+        self.check(row, col)
+
+        self.change += (np.sum(self.board_ai+self.board_user) - prev)
 
         return True
 
@@ -117,23 +122,17 @@ class State:
         """
         The game ends when both players have NO cards in hand.
         """
-        if len(self.user_cards)==0 and len(self.ai_cards)==0:
-            return True
-        else:
-            return False
-
-
+        return (len(self.user_cards)+len(self.ai_cards) == 0)
 
     def win_check(self):
         """
         Compute two players' score and determine who wins the game!
         """
-        user_score = np.sum(self.board_user)
-        ai_score = np.sum(self.board_ai)
+        score = np.sum(self.board_user) - np.sum(self.board_ai)
 
-        if user_score > ai_score:
+        if score > 0:
             return 'user'
-        elif user_score < ai_score:
+        elif score < 0:
             return 'ai'
         else:
             user_max = np.amax(self.board_user)
@@ -147,4 +146,22 @@ class State:
                 return 'draw'      
 
     def heuristic(self):
-        return np.sum(self.board_ai)-np.sum(self.board_user)+0.8*(np.sum(self.ai_cards)-np.sum(self.user_cards))
+        if self.change < 0:
+            return -50
+        elif self.change > 5:
+            return 50
+        return np.sum(self.board_ai-self.board_user)+self.change+np.sum(self.ai_cards)-np.sum(self.user_cards)
+
+    def getsuccessor(self):
+        # Generate childnodes
+        available = np.array(np.where(self.board_legal==True)).T
+        cards = np.array([self.ai_cards]).T
+        
+        childnodes = np.hstack((np.tile(available,(len(cards),1)), 
+                                np.repeat(cards,len(available),0)))
+
+        # Order childnodes
+        rng = np.random.default_rng()
+        rng.shuffle(childnodes, axis=0)
+
+        return childnodes

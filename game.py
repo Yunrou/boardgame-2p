@@ -1,12 +1,24 @@
+import os
 import time
 from threading import Timer
 from copy import deepcopy
 import numpy as np
+
 from state import State
 from agent import MinimaxAgent
 
-CARDS = {4: [2, 3, 5, 8, 13], 6: [2, 2, 3, 3, 5, 5, 8, 8, 8, 13, 13]}
-TIMEOUT = 20
+CARDS = {4: np.array([2, 3, 5, 8, 13]), 6: np.array([2, 2, 3, 3, 5, 5, 8, 8, 8, 13, 13])}
+TIMEOUT = 15
+
+def max_depth(boardsize, AI_first):
+    if boardsize == 4:
+        if AI_first: return 10
+        else: return 9
+    else:
+        if AI_first: return 22 
+        else: return 21 
+
+os.system("")
 
 while True:
     
@@ -19,10 +31,7 @@ while True:
     boardsize = int(input("Board Size? (4 or 6): "))
     if boardsize not in (4, 6):
         continue
-    if boardsize == 6:
-        max_depth = 2
-    else:
-        max_depth = 4
+    
 
     board_user = np.zeros((boardsize, boardsize), dtype=np.int8)
     board_ai = np.zeros((boardsize, boardsize), dtype=np.int8)
@@ -35,13 +44,20 @@ while True:
     B.display_board()
     B.display_cards()
     
+    depth = max_depth(boardsize, not turn)
+
     while True:
         print("")
         if turn == 1:
             # user turn
-            row, col, weight = [int(i) for i in input("Input (row, col, weight): ").split(' ')]
+            while True:
+                row, col, weight = [int(i) for i in input("Input (row, col, weight): ").split(' ')]
 
-            B.place_chess(True, row, col, weight)
+                if B.place_chess(False, row, col, weight):
+                    break
+                
+                print("Oops! Wrong input ...")
+
             print("[User]: ("+str(row)+", "+str(col)+", "+str(weight)+")")
             # B.check()
 
@@ -50,19 +66,21 @@ while True:
 
             turn = 0
         else:
-            agent = MinimaxAgent(deepcopy(B), max_depth, TIMEOUT)
+
+            agent = MinimaxAgent(deepcopy(B), depth, TIMEOUT)
             # t = Timer(TIMEOUT, print, ['Sorry, times up'])
             # t.start()
             # choose the bestmove
             (row, col, weight) = agent.move()
             # t.cancel()
             print(row, col, weight)
-            B.place_chess(False, row, col, weight)
+            B.place_chess(True, row, col, weight)
             print("[AI]: ("+str(row)+", "+str(col)+", "+str(weight)+")")
             # B.check()
             B.display_board()
             B.display_cards()
             
+            depth -= 2
             turn = 1
         
 
