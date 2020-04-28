@@ -6,6 +6,6 @@ A term project of AI course
   Be sure of installing dependencies for all packages:
     - numpy==1.18.3
 - Quick start<br>
-```
-> python game.py
-```
+  ```
+  $ python game.py
+  ```
