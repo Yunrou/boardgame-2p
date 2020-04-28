@@ -88,7 +88,7 @@ while True:
             elif win == 'ai':
                 print('AI Win')
             else:
-                print('Draw')
+                print('Tie')
             break
 
     break
