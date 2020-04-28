@@ -72,7 +72,7 @@ while True:
             # t.cancel()
             (board, cards) = place_chess(True, board.copy(), cards.copy(), 
                                          row, col, weight)
-            print("\n\x1b[93m[AI]:\x1b[0m ("+str(row)+", "+str(col)+", "+str(weight)+")")
+            print("\x1b[93m[AI]:\x1b[0m ("+str(row)+", "+str(col)+", "+str(weight)+")")
             # B.check()
             display_board(board)
             display_cards(cards)
