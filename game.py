@@ -8,7 +8,7 @@ CARDS = {4: np.array([2, 3, 5, 8, 13,
                       -2, -3, -5, -8, -13]), 
          6: np.array([2, 2, 3, 3, 5, 5, 8, 8, 8, 13, 13,
                       -2, -2, -3, -3, -5, -5, -8, -8, -8, -13, -13])}
-TIMEOUT = 6
+TIMEOUT = 15
 
 def max_depth(boardsize, AI_first):
     if boardsize == 4:
