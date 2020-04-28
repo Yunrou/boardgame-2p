@@ -2,7 +2,7 @@
 A term project of AI course
 
 ## How to Compile and Run
-- Python version: 3.7.4 up<br>
+- Python version: 3.7.4 <br>
   Be sure of installing dependencies for all packages:
     - numpy==1.18.3
 - Quick start<br>
