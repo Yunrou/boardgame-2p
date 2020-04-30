@@ -6,7 +6,7 @@ A term project of AI course
   Be sure of installing and upgrading dependencies for all packages:
     - numpy==<font color='firebrick'>1.18.3</font><br> 
       ```
-      pip install --upgrade numpy
+      $ pip install --upgrade numpy
       ```
 - Quick start<br>
   ```
