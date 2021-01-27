@@ -1,5 +1,5 @@
 # boardgame-2p
-A term project of AI course
+The term project of AI course
 
 ## How to Compile and Run
 - Python version: 3.7.4 <br>
